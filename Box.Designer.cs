@@ -132,9 +132,9 @@
             txtDescription.AutoSize = true;
             txtDescription.Location = new Point(113, 146);
             txtDescription.Name = "txtDescription";
-            txtDescription.Size = new Size(70, 15);
+            txtDescription.Size = new Size(83, 15);
             txtDescription.TabIndex = 7;
-            txtDescription.Text = "codigo aqui";
+            txtDescription.Text = "descrição aqui";
             // 
             // button1
             // 
@@ -142,7 +142,7 @@
             button1.Name = "button1";
             button1.Size = new Size(75, 23);
             button1.TabIndex = 8;
-            button1.Text = "button1";
+            button1.Text = "Digitação";
             button1.UseVisualStyleBackColor = true;
             // 
             // button2
@@ -151,7 +151,7 @@
             button2.Name = "button2";
             button2.Size = new Size(75, 23);
             button2.TabIndex = 9;
-            button2.Text = "button2";
+            button2.Text = "Imprimir";
             button2.UseVisualStyleBackColor = true;
             // 
             // button3
@@ -160,8 +160,9 @@
             button3.Name = "button3";
             button3.Size = new Size(75, 23);
             button3.TabIndex = 10;
-            button3.Text = "button3";
+            button3.Text = "Interromper";
             button3.UseVisualStyleBackColor = true;
+            button3.Click += button3_Click;
             // 
             // button4
             // 
@@ -169,8 +170,9 @@
             button4.Name = "button4";
             button4.Size = new Size(75, 23);
             button4.TabIndex = 11;
-            button4.Text = "button4";
+            button4.Text = "Finalizar";
             button4.UseVisualStyleBackColor = true;
+            button4.Click += button4_Click;
             // 
             // txtProductCode
             // 

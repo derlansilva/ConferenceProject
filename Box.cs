@@ -31,14 +31,14 @@ namespace Stock
             {
                 _itemsToCount.Clear();
 
-                string idsString = string.Join(", ", _manifestIds);
+                string idsString = string.Join(",", _manifestIds);
 
                 using (var connection = new Microsoft.Data.Sqlite.SqliteConnection("Data Source=association.db"))
                 {
                     connection.Open();
                     var command = connection.CreateCommand();
                     command.CommandText = $"SELECT Code, Description ,  ExpectedQuantity , CountedQuantity  FROM ManifestItem WHERE ManifestId IN ({idsString})";
-                    
+
                     List<ItemManifest> rawList = new List<ItemManifest>();
 
                     using (var reader = command.ExecuteReader())
@@ -152,14 +152,14 @@ namespace Stock
 
         private void txtProductCode_KeyDown(object sender, KeyEventArgs e)
         {
-            if(e.KeyCode == Keys.Enter)
+            if (e.KeyCode == Keys.Enter)
             {
                 e.SuppressKeyPress = true;
                 string codigoLido = txtProductCode.Text.Trim();
-                
+
                 var row = dgvItems.Rows.Cast<DataGridViewRow>().FirstOrDefault(r => r.Cells["Code"].Value.ToString() == codigoLido);
 
-                if(row != null)
+                if (row != null)
                 {
                     string description = row.Cells["Description"].Value.ToString();
                     txtDescription.Text = description;
@@ -184,6 +184,8 @@ namespace Stock
         private void txtQuantity_KeyDown(object sender, KeyEventArgs e)
         {
 
+
+
             if (e.KeyCode == Keys.Enter)
             {
                 e.SuppressKeyPress = true;
@@ -204,18 +206,38 @@ namespace Stock
                             using (var connection = new SqliteConnection("Data Source=association.db"))
                             {
                                 connection.Open();
-                                var command = connection.CreateCommand();
+                                double remainingToDistribute = qty;
 
-                                // Atualizamos apenas o CountedQuantity para este item e este manifesto
-                                command.CommandText = @"
-                                    UPDATE ManifestItem 
-                                    SET CountedQuantity = @counted 
-                                    WHERE Code = @code AND ManifestId IN (" + string.Join(",", _manifestIds) + ")";
+                                string ids = string.Join(",", _manifestIds);
+                                var searchCmd = connection.CreateCommand();
+                                searchCmd.CommandText = @"
+                                    SELECT Id, CountedQuantity, ExpectedQuantity 
+                                    FROM ManifestItem 
+                                    WHERE Code = @code AND ManifestId IN (" + ids + @")
+                                    ORDER BY (ExpectedQuantity - CountedQuantity) DESC";
 
-                                command.Parameters.AddWithValue("@counted", item.CountedQuantity);
-                                command.Parameters.AddWithValue("@code", item.Code);
+                                searchCmd.Parameters.AddWithValue("@code", barcode);
 
-                                command.ExecuteNonQuery();
+                                using (var reader = searchCmd.ExecuteReader())
+                                {
+                                    while (reader.Read() && remainingToDistribute > 0)
+                                    {
+                                        long dbId = reader.GetInt64(0);
+                                        double expected = reader.GetDouble(1);
+                                        double current = reader.GetDouble(2);
+                                        double gap = expected - current;
+
+                                        double amountToAdd = (remainingToDistribute > gap && gap > 0) ? gap : remainingToDistribute;
+
+                                        var updateCmd = connection.CreateCommand();
+                                        updateCmd.CommandText = "UPDATE ManifestItem SET CountedQuantity = CountedQuantity + @val WHERE Id = @id";
+                                        updateCmd.Parameters.AddWithValue("@val", amountToAdd);
+                                        updateCmd.Parameters.AddWithValue("@id", dbId);
+                                        updateCmd.ExecuteNonQuery();
+
+                                        remainingToDistribute -= amountToAdd;
+                                    }
+                                }
                             }
                         }
                         catch (Exception ex)
@@ -254,7 +276,7 @@ namespace Stock
             RefreshGrid();
         }
 
-    
+
         private void dgvItems_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
         {
             if (e.RowIndex < 0) return;
@@ -276,7 +298,19 @@ namespace Stock
             }
         }
 
+        private void button3_Click(object sender, EventArgs e)
+        {
+            Menu inicial = new Menu();
+            this.Hide();
+            inicial.ShowDialog();
+            this.Close();
 
+        }
+
+        private void button4_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 
 }

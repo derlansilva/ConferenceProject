@@ -95,7 +95,7 @@ namespace Stock
                     tela.ShowDialog();
 
                     tela.TopMost = false;
-                    this.Hide();
+                    this.Close();
                 }
                 else
                 {
