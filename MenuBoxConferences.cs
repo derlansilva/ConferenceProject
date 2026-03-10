@@ -25,13 +25,13 @@ namespace Stock
         {
             List<ManifestSelection> manifests = new List<ManifestSelection>();
 
-            using (var connection = new SqliteConnection("Data Source=association.db"))
+            using (var connection = new SqliteConnection("Data Source=estoqueAGB.db"))
             {
                 await connection.OpenAsync();
                 var selectCmd = connection.CreateCommand();
 
 
-                selectCmd.CommandText = "SELECT Id, ManifestNumber, CreatedAt FROM Manifest ORDER BY Id DESC";
+                selectCmd.CommandText = "SELECT Id, ManifestNumber, CreatedAt FROM Manifest WHERE Status = 0 ORDER BY Id DESC";
 
                 using (var reader = await selectCmd.ExecuteReaderAsync())
                 {
@@ -46,6 +46,8 @@ namespace Stock
                         });
                     }
                 }
+                ApplySapThemeToSelection();
+
             }
 
 
@@ -90,12 +92,10 @@ namespace Stock
 
                     tela.StartPosition = FormStartPosition.CenterScreen;
 
-                    tela.TopMost = true;
-
+                    this.Hide();
                     tela.ShowDialog();
-
-                    tela.TopMost = false;
-                    this.Close();
+                    
+                    tela.FormClosed += (s, args) => this.Close();
                 }
                 else
                 {
@@ -104,6 +104,66 @@ namespace Stock
             }
         }
 
+        private void ApplySapThemeToSelection()
+        {
+            // 1. LIMPEZA E ESTRUTURA
+            if (dgvManifests.Columns["Id"] != null) dgvManifests.Columns["Id"].Visible = false;
+            if (dgvManifests.Columns["Status"] != null) dgvManifests.Columns["Status"].Visible = false;
+
+            // Configurações de Grade (Igual ao SAP)
+            dgvManifests.BackgroundColor = Color.White;
+            dgvManifests.BorderStyle = BorderStyle.Fixed3D;
+            dgvManifests.CellBorderStyle = DataGridViewCellBorderStyle.Single;
+            dgvManifests.GridColor = Color.FromArgb(200, 200, 200); // Linhas cinzas finas
+
+            // MOSTRAR A COLUNA DE NÚMERO (#) NA ESQUERDA
+            dgvManifests.RowHeadersVisible = true;
+            dgvManifests.RowHeadersWidth = 35;
+            dgvManifests.RowHeadersBorderStyle = DataGridViewHeaderBorderStyle.Single;
+            dgvManifests.RowHeadersDefaultCellStyle.BackColor = Color.FromArgb(235, 235, 235);
+
+            // 2. CABEÇALHO (O Cinza Prateado do SAP)
+            dgvManifests.EnableHeadersVisualStyles = false;
+            DataGridViewCellStyle headerStyle = new DataGridViewCellStyle();
+            headerStyle.BackColor = Color.FromArgb(230, 230, 230);
+            headerStyle.ForeColor = Color.Black;
+            headerStyle.Font = new Font("Tahoma", 8.5f, FontStyle.Regular);
+            dgvManifests.ColumnHeadersDefaultCellStyle = headerStyle;
+            dgvManifests.ColumnHeadersHeight = 25;
+            dgvManifests.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.Single;
+
+            // 3. ESTILO DAS LINHAS (Sem seleção azul ou amarela)
+            dgvManifests.DefaultCellStyle.Font = new Font("Tahoma", 8);
+            dgvManifests.DefaultCellStyle.ForeColor = Color.Black;
+            dgvManifests.DefaultCellStyle.BackColor = Color.White;
+            dgvManifests.RowTemplate.Height = 22;
+
+            // Mata o destaque de seleção (fica invisível como você pediu nas outras telas)
+            dgvManifests.DefaultCellStyle.SelectionBackColor = Color.White;
+            dgvManifests.DefaultCellStyle.SelectionForeColor = Color.Black;
+
+            // 4. NOMES DAS COLUNAS
+            if (dgvManifests.Columns["IsSelected"] != null) dgvManifests.Columns["IsSelected"].HeaderText = "Selecionar";
+            if (dgvManifests.Columns["ManifestNumber"] != null) dgvManifests.Columns["ManifestNumber"].HeaderText = "Nº do documento";
+            if (dgvManifests.Columns["CreatedAt"] != null) dgvManifests.Columns["CreatedAt"].HeaderText = "Data de lançamento";
+
+            // 5. AJUSTE DE LARGURA
+            dgvManifests.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+            if (dgvManifests.Columns["IsSelected"] != null) dgvManifests.Columns["IsSelected"].FillWeight = 20;
+
+            // 6. NUMERAÇÃO AUTOMÁTICA (1, 2, 3...) NA LATERAL
+            dgvManifests.RowPostPaint += (s, e) => {
+                var grid = s as DataGridView;
+                var rowIdx = (e.RowIndex + 1).ToString();
+                var centerFormat = new StringFormat() { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center };
+                var headerBounds = new Rectangle(e.RowBounds.Left, e.RowBounds.Top, grid.RowHeadersWidth, e.RowBounds.Height);
+                e.Graphics.DrawString(rowIdx, grid.Font, SystemBrushes.ControlText, headerBounds, centerFormat);
+            };
+
+            // Limpa qualquer seleção inicial
+            dgvManifests.ClearSelection();
+            dgvManifests.CurrentCell = null;
+        }
         private void dgvManifests_CurrentCellDirtyStateChanged_1(object sender, EventArgs e)
         {
             if (dgvManifests.IsCurrentCellDirty)

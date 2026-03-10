@@ -38,7 +38,7 @@
             lblRemainingItems = new Label();
             txtDescription = new Label();
             button1 = new Button();
-            button2 = new Button();
+            btnPrint = new Button();
             button3 = new Button();
             button4 = new Button();
             txtProductCode = new TextBox();
@@ -145,18 +145,19 @@
             button1.Text = "Digitação";
             button1.UseVisualStyleBackColor = true;
             // 
-            // button2
+            // btnPrint
             // 
-            button2.Location = new Point(153, 552);
-            button2.Name = "button2";
-            button2.Size = new Size(75, 23);
-            button2.TabIndex = 9;
-            button2.Text = "Imprimir";
-            button2.UseVisualStyleBackColor = true;
+            btnPrint.Location = new Point(153, 552);
+            btnPrint.Name = "btnPrint";
+            btnPrint.Size = new Size(75, 23);
+            btnPrint.TabIndex = 9;
+            btnPrint.Text = "Imprimir";
+            btnPrint.UseVisualStyleBackColor = true;
+            btnPrint.Click += button2_Click;
             // 
             // button3
             // 
-            button3.Location = new Point(244, 552);
+            button3.Location = new Point(234, 552);
             button3.Name = "button3";
             button3.Size = new Size(75, 23);
             button3.TabIndex = 10;
@@ -166,7 +167,7 @@
             // 
             // button4
             // 
-            button4.Location = new Point(334, 552);
+            button4.Location = new Point(315, 552);
             button4.Name = "button4";
             button4.Size = new Size(75, 23);
             button4.TabIndex = 11;
@@ -221,7 +222,7 @@
             Controls.Add(txtProductCode);
             Controls.Add(button4);
             Controls.Add(button3);
-            Controls.Add(button2);
+            Controls.Add(btnPrint);
             Controls.Add(button1);
             Controls.Add(txtDescription);
             Controls.Add(lblRemainingItems);
@@ -249,7 +250,7 @@
         private Label lblRemainingItems;
         private Label txtDescription;
         private Button button1;
-        private Button button2;
+        private Button btnPrint;
         private Button button3;
         private Button button4;
         private TextBox txtProductCode;

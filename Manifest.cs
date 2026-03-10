@@ -48,6 +48,8 @@ namespace Stock
             }
 
 
+            ApplySapThemeToManifest();
+
         }
 
 
@@ -104,15 +106,17 @@ namespace Stock
             try
             {
                 // Use inventory.db as the filename
-                using (var connection = new Microsoft.Data.Sqlite.SqliteConnection("Data Source=association.db"))
+                using (var connection = new Microsoft.Data.Sqlite.SqliteConnection("Data Source=estoqueAGB.db"))
                 {
                     await connection.OpenAsync();
 
                     var createTablesCmd = connection.CreateCommand();
                     createTablesCmd.CommandText = @"
+                       
                         CREATE TABLE IF NOT EXISTS Manifest (
                             Id INTEGER PRIMARY KEY AUTOINCREMENT,
                             ManifestNumber TEXT,
+                            Status INTEGER DEFAULT 0,
                             CreatedAt TEXT
                         );
                         CREATE TABLE IF NOT EXISTS ManifestItem (
@@ -121,9 +125,18 @@ namespace Stock
                             Code TEXT,
                             Description TEXT,
                             ExpectedQuantity REAL,
-                            CountedQuantity REAL DEFAULT 0,
+                            CountedQuantity REAL DEFAULT 0, -- VÍRGULA AQUI É O SEGREDO
                             FOREIGN KEY (ManifestId) REFERENCES Manifest(Id)
-                        );";
+                        );
+                        CREATE TABLE IF NOT EXISTS PrintQueue (
+                            Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                            ProductCode TEXT,
+                            Description TEXT,
+                            Qty REAL,
+                            ScannedAt TEXT,
+                            CheckedBy TEXT
+                        );
+                                            ";
                     await createTablesCmd.ExecuteNonQueryAsync();
 
                     // 2. Generating the random number (Using full name to avoid Red Line) 🎲
@@ -184,6 +197,53 @@ namespace Stock
             inicial.ShowDialog();
             this.Close();
         }
+
+
+        private void ApplySapThemeToManifest()
+        {
+            // 1. ESCONDER O QUE NÃO PRECISA NA TELA DE BUSCA
+            if (dgvItems.Columns["ExpectedQuantity"] != null) dgvItems.Columns["ExpectedQuantity"].Visible = false;
+            if (dgvItems.Columns["CountedQuantity"] != null) dgvItems.Columns["CountedQuantity"].Visible = false;
+            if (dgvItems.Columns["Status"] != null) dgvItems.Columns["Status"].Visible = false;
+            if (dgvItems.Columns["ManifestId"] != null) dgvItems.Columns["ManifestId"].Visible = false;
+
+            dgvItems.RowHeadersVisible = false; // Tira a seta da esquerda
+
+            // 2. CONFIGURAÇÃO VISUAL (Igual à tela Box)
+            dgvItems.BackgroundColor = Color.White;
+            dgvItems.BorderStyle = BorderStyle.None;
+            dgvItems.CellBorderStyle = DataGridViewCellBorderStyle.Single;
+            dgvItems.GridColor = Color.FromArgb(200, 200, 200);
+            dgvItems.ReadOnly = true;
+            dgvItems.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+
+            // 3. CABEÇALHO CINZA SAP
+            dgvItems.EnableHeadersVisualStyles = false;
+            DataGridViewCellStyle headerStyle = new DataGridViewCellStyle();
+            headerStyle.BackColor = Color.FromArgb(225, 225, 225);
+            headerStyle.ForeColor = Color.Black;
+            headerStyle.Font = new Font("Tahoma", 8.5f, FontStyle.Bold);
+            dgvItems.ColumnHeadersDefaultCellStyle = headerStyle;
+            dgvItems.ColumnHeadersHeight = 25;
+
+            // 4. NOMES DAS COLUNAS (Apenas as 3 que você quer)
+            dgvItems.Columns["Code"].HeaderText = "Código";
+            dgvItems.Columns["Description"].HeaderText = "Descrição do Produto";
+            dgvItems.Columns["Quantity"].HeaderText = "Quantidade";
+
+            // 5. AJUSTE DE LARGURA E MATAR O AZUL
+            dgvItems.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+            dgvItems.Columns["Code"].FillWeight = 20;
+            dgvItems.Columns["Description"].FillWeight = 60;
+            dgvItems.Columns["Quantity"].FillWeight = 20;
+
+            // Remove o azul de seleção automática
+            dgvItems.DefaultCellStyle.SelectionBackColor = Color.White;
+            dgvItems.DefaultCellStyle.SelectionForeColor = Color.Black;
+
+            dgvItems.ClearSelection();
+        }
+
     }
 
 

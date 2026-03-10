@@ -14,6 +14,7 @@ namespace Stock
     {
         private List<long> _manifestIds;
         private List<ItemManifest> _itemsToCount;
+        private List<ItemManifest> _printQueue = new List<ItemManifest>();
         public Box(List<long> _manifestIds)
         {
             InitializeComponent();
@@ -33,7 +34,7 @@ namespace Stock
 
                 string idsString = string.Join(",", _manifestIds);
 
-                using (var connection = new Microsoft.Data.Sqlite.SqliteConnection("Data Source=association.db"))
+                using (var connection = new Microsoft.Data.Sqlite.SqliteConnection("Data Source=estoqueAGB.db"))
                 {
                     connection.Open();
                     var command = connection.CreateCommand();
@@ -105,24 +106,13 @@ namespace Stock
             dgvItems.DataSource = null;
             dgvItems.DataSource = _itemsToCount;
 
-            if (dgvItems.Columns["Code"] != null)
-            {
-                // Define quais colunas aparecem e seus nomes
-                dgvItems.Columns["Code"].HeaderText = "Codigo";
-                dgvItems.Columns["Description"].HeaderText = "Description";
+            ApplySapTheme();
 
-                // COLUNA 1: QUANTIDADE TOTAL (DO MANIFESTO)
-                dgvItems.Columns["Quantity"].Visible = true;
-                dgvItems.Columns["Quantity"].HeaderText = "Total Qty";
+            // Isso aqui limpa o azul do carregamento
+            dgvItems.ClearSelection();
 
-                // COLUNA 2: QUANTIDADE JÁ CONTADA (BIPADA)
-                dgvItems.Columns["CountedQuantity"].Visible = true;
-                dgvItems.Columns["CountedQuantity"].HeaderText = "Contados";
-
-                // ESCONDE O STATUS ANTIGO E A COLUNA REPETIDA
-                if (dgvItems.Columns["Status"] != null) dgvItems.Columns["Status"].Visible = false;
-                if (dgvItems.Columns["ExpectedQuantity"] != null) dgvItems.Columns["ExpectedQuantity"].Visible = false;
-            }
+            // Garante que o clique não "pinte" nada de azul depois
+            dgvItems.CurrentCell = null;
         }
 
         public void SetupUI()
@@ -134,6 +124,77 @@ namespace Stock
             this.Activated += (s, e) => txtProductCode.Focus();
 
         }
+
+        private void ApplySapTheme()
+        {
+            // 1. ESCONDER O QUE NÃO PRECISA
+            if (dgvItems.Columns["ExpectedQuantity"] != null) dgvItems.Columns["ExpectedQuantity"].Visible = false;
+            if (dgvItems.Columns["Status"] != null) dgvItems.Columns["Status"].Visible = false;
+            dgvItems.RowHeadersVisible = false; // Tira a seta da esquerda
+
+            // 2. CONFIGURAÇÃO DE BORDAS E CORES GERAIS
+            dgvItems.BackgroundColor = Color.White;
+            dgvItems.BorderStyle = BorderStyle.None;
+            dgvItems.CellBorderStyle = DataGridViewCellBorderStyle.Single;
+            dgvItems.GridColor = Color.FromArgb(200, 200, 200); // Linhas da grade cinzas
+
+            // Desativa a seleção visual (o clique não faz nada)
+            dgvItems.ReadOnly = true;
+            dgvItems.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+
+            // 3. CABEÇALHO (O Cinza do SAP)
+            dgvItems.EnableHeadersVisualStyles = false;
+            DataGridViewCellStyle headerStyle = new DataGridViewCellStyle();
+            headerStyle.BackColor = Color.FromArgb(225, 225, 225); // Cinza SAP
+            headerStyle.ForeColor = Color.Black;
+            headerStyle.Font = new Font("Tahoma", 8.5f, FontStyle.Regular);
+            dgvItems.ColumnHeadersDefaultCellStyle = headerStyle;
+            dgvItems.ColumnHeadersHeight = 22;
+            dgvItems.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.Single;
+
+            // 4. NOMES DAS COLUNAS
+            dgvItems.Columns["Code"].HeaderText = "Nº do item";
+            dgvItems.Columns["Description"].HeaderText = "Descrição do item";
+            dgvItems.Columns["Quantity"].HeaderText = "Qtd. Total";
+            dgvItems.Columns["CountedQuantity"].HeaderText = "Contados";
+
+            // 5. AJUSTE DE LARGURA (Ocupar a tela toda)
+            dgvItems.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+            dgvItems.Columns["Code"].FillWeight = 20;
+            dgvItems.Columns["Description"].FillWeight = 50;
+            dgvItems.Columns["Quantity"].FillWeight = 15;
+            dgvItems.Columns["CountedQuantity"].FillWeight = 15;
+        }
+
+
+        // 4. LÓGICA DAS CORES (Azul no Bipado)
+        private void dgvItems_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
+        {
+            if (e.RowIndex < 0) return;
+
+            var item = (ItemManifest)dgvItems.Rows[e.RowIndex].DataBoundItem;
+
+            // Se o item foi bipado (Contados > 0)
+            if (item.CountedQuantity > 0)
+            {
+                // Azul "Bipado" (Um azul mais suave que o anterior para não sumir o texto)
+                dgvItems.Rows[e.RowIndex].DefaultCellStyle.BackColor = Color.FromArgb(0, 125, 210);
+                dgvItems.Rows[e.RowIndex].DefaultCellStyle.ForeColor = Color.White;
+
+                // Garante que mesmo clicando, continue azul
+                dgvItems.Rows[e.RowIndex].DefaultCellStyle.SelectionBackColor = Color.FromArgb(0, 125, 210);
+                dgvItems.Rows[e.RowIndex].DefaultCellStyle.SelectionForeColor = Color.White;
+            }
+            else
+            {
+                // Branco padrão para o que não foi bipado
+                dgvItems.Rows[e.RowIndex].DefaultCellStyle.BackColor = Color.White;
+                dgvItems.Rows[e.RowIndex].DefaultCellStyle.ForeColor = Color.Black;
+                dgvItems.Rows[e.RowIndex].DefaultCellStyle.SelectionBackColor = Color.White;
+                dgvItems.Rows[e.RowIndex].DefaultCellStyle.SelectionForeColor = Color.Black;
+            }
+        }
+
 
         private void label3_Click(object sender, EventArgs e)
         {
@@ -192,18 +253,30 @@ namespace Stock
 
                 if (double.TryParse(txtQuantity.Text, out double qty))
                 {
+
+
                     string barcode = txtProductCode.Text.Trim();
                     var item = _itemsToCount.FirstOrDefault(x => x.Code == barcode);
 
                     if (item != null)
                     {
-                        // 1. Atualiza na memória (Lista)
+
+                        _printQueue.Add(new ItemManifest
+                        {
+                            Code = item.Code,
+                            Description = item.Description,
+                            Quantity = qty  // AQUI: Usamos a variável 'qty' do bip atual para a etiqueta
+                        });
+
+
+
                         item.CountedQuantity += qty;
+                      
 
                         // 2. SALVA NO BANCO (SQLite) IMEDIATAMENTE
                         try
                         {
-                            using (var connection = new SqliteConnection("Data Source=association.db"))
+                            using (var connection = new SqliteConnection("Data Source=estoqueAGB.db"))
                             {
                                 connection.Open();
                                 double remainingToDistribute = qty;
@@ -238,6 +311,28 @@ namespace Stock
                                         remainingToDistribute -= amountToAdd;
                                     }
                                 }
+                            }
+
+                            using (var connection = new SqliteConnection("Data Source=estoqueAGB.db"))
+                            {
+                                connection.Open();
+                                var cmdQueue = connection.CreateCommand();
+
+                                // Adicionamos o campo CheckedBy no INSERT
+                                cmdQueue.CommandText = @"
+                                INSERT INTO PrintQueue (ProductCode, Description, Qty, ScannedAt, CheckedBy) 
+                                VALUES (@code, @desc, @qty, @date, @user)";
+
+                                cmdQueue.Parameters.AddWithValue("@code", item.Code);
+                                cmdQueue.Parameters.AddWithValue("@desc", item.Description);
+                                cmdQueue.Parameters.AddWithValue("@qty", qty);
+                                cmdQueue.Parameters.AddWithValue("@date", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+
+                                // Aqui você passa o nome de quem está conferindo
+                                string nomeConferente = "DERLAN"; // Ou System.Environment.UserName para pegar do Windows
+                                cmdQueue.Parameters.AddWithValue("@user", nomeConferente);
+
+                                cmdQueue.ExecuteNonQuery();
                             }
                         }
                         catch (Exception ex)
@@ -277,26 +372,7 @@ namespace Stock
         }
 
 
-        private void dgvItems_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
-        {
-            if (e.RowIndex < 0) return;
-
-            var item = (ItemManifest)dgvItems.Rows[e.RowIndex].DataBoundItem;
-
-            // Se o contado for igual ou maior que o esperado, a linha fica vermelha
-            if (item.CountedQuantity >= item.ExpectedQuantity)
-            {
-                dgvItems.Rows[e.RowIndex].DefaultCellStyle.BackColor = Color.Red;
-                dgvItems.Rows[e.RowIndex].DefaultCellStyle.ForeColor = Color.White;
-                dgvItems.Rows[e.RowIndex].DefaultCellStyle.SelectionBackColor = Color.DarkRed; // Destaque quando selecionado
-            }
-            else
-            {
-                // Volta ao padrão se não estiver completo
-                dgvItems.Rows[e.RowIndex].DefaultCellStyle.BackColor = Color.White;
-                dgvItems.Rows[e.RowIndex].DefaultCellStyle.ForeColor = Color.Black;
-            }
-        }
+       
 
         private void button3_Click(object sender, EventArgs e)
         {
@@ -309,6 +385,141 @@ namespace Stock
 
         private void button4_Click(object sender, EventArgs e)
         {
+            // 1. Pergunta para confirmar, estilo SAP
+            var result = MessageBox.Show("Deseja finalizar a conferência deste manifesto?",
+                                         "Finalizar Documento",
+                                         MessageBoxButtons.YesNo,
+                                         MessageBoxIcon.Question);
+
+            if (result == DialogResult.Yes)
+            {
+                try
+                {
+                    using (var connection = new SqliteConnection("Data Source=estoqueAGB.db"))
+                    {
+                        connection.Open();
+
+                        // 2. Atualiza o Status do Manifesto para 1 (Finalizado)
+                        // Isso faz com que ele suma da lista de seleção inicial
+                        var cmdStatus = connection.CreateCommand();
+                        cmdStatus.CommandText = "UPDATE Manifest SET Status = 1 WHERE Id IN (" + string.Join(",", _manifestIds) + ")";
+                        cmdStatus.ExecuteNonQuery();
+
+                        // 3. Limpa a Fila de Impressão (PrintQueue)
+                        // Já que você finalizou, a próxima carga deve começar com a fila vazia
+                        var cmdClear = connection.CreateCommand();
+                        cmdClear.CommandText = "DELETE FROM PrintQueue";
+                        cmdClear.ExecuteNonQuery();
+                    }
+
+                    MessageBox.Show("Manifesto finalizado com sucesso!", "SAP Business One", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                    // 4. Fecha a tela de conferência e volta para a seleção
+                    this.Close();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Erro ao finalizar manifesto: " + ex.Message);
+                }
+            }
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+         
+
+            using (var connection = new SqliteConnection("Data Source=estoqueAGB.db"))
+            {
+                connection.Open();
+                var cmd = connection.CreateCommand();
+                cmd.CommandText = "SELECT Id, ProductCode, Description, Qty, ScannedAt, CheckedBy FROM PrintQueue  ORDER BY Id ASC";
+
+                using (var reader = cmd.ExecuteReader())
+                {
+
+                    if (!reader.HasRows)
+                    {
+                        MessageBox.Show("Nenhum item bipado para imprimir.");
+                        return;
+                    }
+                    while (reader.Read())
+                    {
+                        long rowId = reader.GetInt64(0);
+                        string code = reader.GetString(1);
+                        string desc = reader.GetString(2);
+                        double qty = reader.GetDouble(3);
+                        string scannedDate = reader.IsDBNull(4) ? DateTime.Now.ToString("dd/MM/yyyy HH:mm") : reader.GetString(4);
+                        string user = reader.IsDBNull(5) ? "N/A" : reader.GetString(4); // Nome do conferente
+
+                        // DATAS DEFINIDAS AQUI PARA O ZPL
+                        string printDate = DateTime.Now.ToString("dd/MM/yyyy HH:mm");
+                        string expiryDate = "10/28";
+
+                        // SEU CÓDIGO ZPL AQUI (usando as variáveis acima)
+                        string zpl = $@"
+
+                                    CT
+                                    ~~CD,
+                                    ~CC^
+                                    ~CT~
+                                    ^XA
+                                    ~TA000
+                                    ~JSN
+                                    ^LT0
+                                    ^MNW
+                                    ^MTT
+                                    ^PON
+                                    ^PMN
+                                    ^LH0,0
+                                    ^JMA
+                                    ^PR6,6
+                                    ~SD15
+                                    ^JUS
+                                    ^LRN
+                                    ^CI27
+                                    ^PA0,1,1,0
+                                    ^XZ
+                                    ^XA
+                                    ^MMT
+                                    ^PW480
+                                    ^LL799
+                                    ^LS0
+                                    ^BY1,3,96^FT457,468^BCB,,Y,N
+                                    ^FH\^FD>;{code}^FS
+                                    ^FT67,468^A0B,28,28^FH\^CI28^FD{code}^FS^CI27
+                                    ^FT53,750^A0B,14,15^FH\^CI28^FDNF: 12345566^FS^CI27
+                                    ^FT53,223^A0B,14,15^FH\^CI28^FDconferido em : {scannedDate}^FS^CI27
+                                    ^FT75,223^A0B,14,15^FH\^CI28^FDPor :{user}^FS^CI27
+                                    ^FT194,750^A0B,39,38^FH\^CI28^FD{desc}^FS^CI27
+                                    ^FT357,740^A0B,17,18^FH\^CI28^FDQnt^FS^CI27
+                                    ^FT405,742^A0B,28,28^FH\^CI28^FD{qty}^FS^CI27
+                                    ^FT357,164^A0B,17,18^FH\^CI28^FDValidade^FS^CI27
+                                    ^FT405,159^A0B,28,28^FH\^CI28^FD{expiryDate}^FS^CI27
+                                    ^FO90,2^GB0,795,1^FS
+                                    ^FO328,2^GB0,795,1^FS
+                                    ^FO330,596^GB150,0,1^FS
+                                    ^FO330,242^GB150,0,1^FS
+                                    ^FO1,596^GB89,0,1^FS
+                                    ^FO1,242^GB89,0,1^FS
+                                    ^PQ1,0,1,Y
+                                    ^XZ";
+
+                       string url = "http://labelary.com/viewer.html?zpl=" + Uri.EscapeDataString(zpl);
+                        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                        {
+                            FileName = url,
+                            UseShellExecute = true
+                        });
+
+                        // Envia cada etiqueta individualmente
+                        //RawPrinterHelper.SendStringToPrinter(user, zpl);
+
+
+
+           
+                    }
+                }
+            }
 
         }
     }

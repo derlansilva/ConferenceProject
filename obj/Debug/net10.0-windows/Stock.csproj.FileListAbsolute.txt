@@ -46,3 +46,4 @@ C:\Users\joder\Desktop\RECEBIMETO_PRODUTOS\Stock\Stock\obj\Debug\net10.0-windows
 C:\Users\joder\Desktop\RECEBIMETO_PRODUTOS\Stock\Stock\obj\Debug\net10.0-windows\Stock.Menu.resources
 C:\Users\joder\Desktop\RECEBIMETO_PRODUTOS\Stock\Stock\obj\Debug\net10.0-windows\Stock.MenuBoxConferences.resources
 C:\Users\joder\Desktop\RECEBIMETO_PRODUTOS\Stock\Stock\obj\Debug\net10.0-windows\Stock.Box.resources
+C:\Users\joder\Desktop\RECEBIMETO_PRODUTOS\Stock\Stock\obj\Debug\net10.0-windows\Stock.sourcelink.json
