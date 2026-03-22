@@ -45,6 +45,8 @@
             txtQuantity = new TextBox();
             dgvItems = new DataGridView();
             lblManifestNumber = new Label();
+            btnRelatorio = new Button();
+            btnValidate = new Button();
             ((System.ComponentModel.ISupportInitialize)dgvItems).BeginInit();
             SuspendLayout();
             // 
@@ -79,7 +81,6 @@
             label3.Size = new Size(106, 30);
             label3.TabIndex = 2;
             label3.Text = "Contados";
-            label3.Click += label3_Click;
             // 
             // label4
             // 
@@ -88,9 +89,10 @@
             label4.ForeColor = Color.Red;
             label4.Location = new Point(811, 60);
             label4.Name = "label4";
-            label4.Size = new Size(59, 30);
+            label4.Size = new Size(68, 30);
             label4.TabIndex = 3;
-            label4.Text = "Falta";
+            label4.Text = "Faltas";
+            label4.Click += label4_Click;
             // 
             // lblTotalItems
             // 
@@ -113,7 +115,6 @@
             lblCountedItems.Size = new Size(37, 30);
             lblCountedItems.TabIndex = 5;
             lblCountedItems.Text = "25";
-            lblCountedItems.Click += lblConferidoValue_Click;
             // 
             // lblRemainingItems
             // 
@@ -125,16 +126,15 @@
             lblRemainingItems.Size = new Size(37, 30);
             lblRemainingItems.TabIndex = 6;
             lblRemainingItems.Text = "75";
-            lblRemainingItems.Click += lblFaltandoValue_Click;
             // 
             // txtDescription
             // 
             txtDescription.AutoSize = true;
             txtDescription.Location = new Point(113, 146);
             txtDescription.Name = "txtDescription";
-            txtDescription.Size = new Size(83, 15);
+            txtDescription.Size = new Size(57, 15);
             txtDescription.TabIndex = 7;
-            txtDescription.Text = "descrição aqui";
+            txtDescription.Text = "descrição";
             // 
             // button1
             // 
@@ -159,7 +159,7 @@
             // 
             button3.Location = new Point(234, 552);
             button3.Name = "button3";
-            button3.Size = new Size(75, 23);
+            button3.Size = new Size(91, 23);
             button3.TabIndex = 10;
             button3.Text = "Interromper";
             button3.UseVisualStyleBackColor = true;
@@ -167,7 +167,7 @@
             // 
             // button4
             // 
-            button4.Location = new Point(315, 552);
+            button4.Location = new Point(514, 552);
             button4.Name = "button4";
             button4.Size = new Size(75, 23);
             button4.TabIndex = 11;
@@ -211,11 +211,33 @@
             lblManifestNumber.TabIndex = 15;
             lblManifestNumber.Text = "manifestos aqui";
             // 
+            // btnRelatorio
+            // 
+            btnRelatorio.Location = new Point(331, 552);
+            btnRelatorio.Name = "btnRelatorio";
+            btnRelatorio.Size = new Size(75, 23);
+            btnRelatorio.TabIndex = 16;
+            btnRelatorio.Text = "Relatorio";
+            btnRelatorio.UseVisualStyleBackColor = true;
+            btnRelatorio.Click += btnRelatorio_Click;
+            // 
+            // btnValidate
+            // 
+            btnValidate.Location = new Point(412, 552);
+            btnValidate.Name = "btnValidate";
+            btnValidate.Size = new Size(96, 23);
+            btnValidate.TabIndex = 17;
+            btnValidate.Text = "Inserir Validade";
+            btnValidate.UseVisualStyleBackColor = true;
+            btnValidate.Click += btnValidate_Click;
+            // 
             // Box
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(963, 596);
+            Controls.Add(btnValidate);
+            Controls.Add(btnRelatorio);
             Controls.Add(lblManifestNumber);
             Controls.Add(dgvItems);
             Controls.Add(txtQuantity);
@@ -257,5 +279,7 @@
         private TextBox txtQuantity;
         private DataGridView dgvItems;
         private Label lblManifestNumber;
+        private Button btnRelatorio;
+        private Button btnValidate;
     }
 }

@@ -106,49 +106,19 @@ namespace Stock
             try
             {
                 // Use inventory.db as the filename
-                using (var connection = new Microsoft.Data.Sqlite.SqliteConnection("Data Source=estoqueAGB.db"))
+                using (var connection = new Microsoft.Data.Sqlite.SqliteConnection("Data Source=AGB_v2.db"))
                 {
                     await connection.OpenAsync();
 
-                    var createTablesCmd = connection.CreateCommand();
-                    createTablesCmd.CommandText = @"
-                       
-                        CREATE TABLE IF NOT EXISTS Manifest (
-                            Id INTEGER PRIMARY KEY AUTOINCREMENT,
-                            ManifestNumber TEXT,
-                            Status INTEGER DEFAULT 0,
-                            CreatedAt TEXT
-                        );
-                        CREATE TABLE IF NOT EXISTS ManifestItem (
-                            Id INTEGER PRIMARY KEY AUTOINCREMENT,
-                            ManifestId INTEGER,
-                            Code TEXT,
-                            Description TEXT,
-                            ExpectedQuantity REAL,
-                            CountedQuantity REAL DEFAULT 0, -- VÍRGULA AQUI É O SEGREDO
-                            FOREIGN KEY (ManifestId) REFERENCES Manifest(Id)
-                        );
-                        CREATE TABLE IF NOT EXISTS PrintQueue (
-                            Id INTEGER PRIMARY KEY AUTOINCREMENT,
-                            ProductCode TEXT,
-                            Description TEXT,
-                            Qty REAL,
-                            ScannedAt TEXT,
-                            CheckedBy TEXT
-                        );
-                                            ";
-                    await createTablesCmd.ExecuteNonQueryAsync();
 
-                    // 2. Generating the random number (Using full name to avoid Red Line) 🎲
-                    System.Random randomTool = new System.Random();
-                    string manifestIdStr = randomTool.Next(1000, 9999).ToString();
+                    string manifestIdStr = "AGB" + DateTime.Now.ToString("yyyyMMddHHmm");
 
                     // 3. Saving the Parent Manifest 🆔
                     var insertManifestCmd = connection.CreateCommand();
                     insertManifestCmd.CommandText = @"
-                INSERT INTO Manifest (ManifestNumber, CreatedAt) 
-                VALUES (@num, @date);
-                SELECT last_insert_rowid();";
+                        INSERT INTO Manifest (ManifestNumber, CreatedAt) 
+                        VALUES (@num, @date);
+                        SELECT last_insert_rowid();";
 
                     insertManifestCmd.Parameters.AddWithValue("@num", manifestIdStr);
                     insertManifestCmd.Parameters.AddWithValue("@date", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
@@ -175,7 +145,7 @@ namespace Stock
                     // 5. Success feedback
                     await Task.Delay(1000);
                     pbProcessing.Visible = false;
-                    MessageBox.Show($"Manifest #{manifestIdStr} saved successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show($"Manifesto Nº {manifestIdStr} Gerado com Sucesso!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
                     btnGenerateManifest.Visible = false;
                     btnBackToMenu.Visible = true;
@@ -192,9 +162,9 @@ namespace Stock
 
         private void btnBackToMenu_Click(object sender, EventArgs e)
         {
-           Menu inicial = new Stock.Menu();
+          // Menu inicial = new Stock.Menu();
             this.Hide();
-            inicial.ShowDialog();
+            //inicial.ShowDialog();
             this.Close();
         }
 
@@ -210,18 +180,18 @@ namespace Stock
             dgvItems.RowHeadersVisible = false; // Tira a seta da esquerda
 
             // 2. CONFIGURAÇÃO VISUAL (Igual à tela Box)
-            dgvItems.BackgroundColor = Color.White;
+            dgvItems.BackgroundColor = System.Drawing.Color.White;
             dgvItems.BorderStyle = BorderStyle.None;
             dgvItems.CellBorderStyle = DataGridViewCellBorderStyle.Single;
-            dgvItems.GridColor = Color.FromArgb(200, 200, 200);
+            dgvItems.GridColor = System.Drawing.Color.FromArgb(200, 200, 200);
             dgvItems.ReadOnly = true;
             dgvItems.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
 
             // 3. CABEÇALHO CINZA SAP
             dgvItems.EnableHeadersVisualStyles = false;
             DataGridViewCellStyle headerStyle = new DataGridViewCellStyle();
-            headerStyle.BackColor = Color.FromArgb(225, 225, 225);
-            headerStyle.ForeColor = Color.Black;
+            headerStyle.BackColor = System.Drawing.Color.FromArgb(225, 225, 225);
+            headerStyle.ForeColor = System.Drawing.Color.Black;
             headerStyle.Font = new Font("Tahoma", 8.5f, FontStyle.Bold);
             dgvItems.ColumnHeadersDefaultCellStyle = headerStyle;
             dgvItems.ColumnHeadersHeight = 25;
@@ -238,8 +208,8 @@ namespace Stock
             dgvItems.Columns["Quantity"].FillWeight = 20;
 
             // Remove o azul de seleção automática
-            dgvItems.DefaultCellStyle.SelectionBackColor = Color.White;
-            dgvItems.DefaultCellStyle.SelectionForeColor = Color.Black;
+            dgvItems.DefaultCellStyle.SelectionBackColor = System.Drawing.Color.White;
+            dgvItems.DefaultCellStyle.SelectionForeColor = System.Drawing.Color.Black;
 
             dgvItems.ClearSelection();
         }

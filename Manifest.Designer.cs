@@ -64,9 +64,9 @@
             // btnGenerateManifest
             // 
             btnGenerateManifest.Enabled = false;
-            btnGenerateManifest.Location = new Point(654, 545);
+            btnGenerateManifest.Location = new Point(654, 534);
             btnGenerateManifest.Name = "btnGenerateManifest";
-            btnGenerateManifest.Size = new Size(213, 23);
+            btnGenerateManifest.Size = new Size(213, 34);
             btnGenerateManifest.TabIndex = 2;
             btnGenerateManifest.Text = "Gerar Manifesto";
             btnGenerateManifest.UseVisualStyleBackColor = true;
@@ -84,9 +84,9 @@
             // 
             // btnBackToMenu
             // 
-            btnBackToMenu.Location = new Point(115, 548);
+            btnBackToMenu.Location = new Point(115, 537);
             btnBackToMenu.Name = "btnBackToMenu";
-            btnBackToMenu.Size = new Size(149, 23);
+            btnBackToMenu.Size = new Size(149, 34);
             btnBackToMenu.TabIndex = 3;
             btnBackToMenu.Text = "Voltar ao Menu";
             btnBackToMenu.UseVisualStyleBackColor = true;
@@ -95,7 +95,7 @@
             // 
             // pbProcessing
             // 
-            pbProcessing.Location = new Point(312, 511);
+            pbProcessing.Location = new Point(311, 490);
             pbProcessing.Name = "pbProcessing";
             pbProcessing.Size = new Size(556, 17);
             pbProcessing.TabIndex = 2;

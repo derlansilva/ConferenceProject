@@ -30,8 +30,8 @@
         {
             button1 = new Button();
             button2 = new Button();
-            button3 = new Button();
             UserName = new Label();
+            btnUser = new Button();
             SuspendLayout();
             // 
             // button1
@@ -50,37 +50,38 @@
             button2.Name = "button2";
             button2.Size = new Size(221, 38);
             button2.TabIndex = 1;
-            button2.Text = "Conferencia Caixas";
+            button2.Text = "Conferencia";
             button2.UseVisualStyleBackColor = true;
             button2.Click += button2_Click;
-            // 
-            // button3
-            // 
-            button3.Location = new Point(388, 234);
-            button3.Name = "button3";
-            button3.Size = new Size(221, 38);
-            button3.TabIndex = 2;
-            button3.Text = "Conferencia Fracionados";
-            button3.UseVisualStyleBackColor = true;
-            button3.Click += button3_Click;
             // 
             // UserName
             // 
             UserName.AutoSize = true;
+            UserName.BackColor = Color.SeaShell;
+            UserName.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
             UserName.Location = new Point(821, 20);
             UserName.Name = "UserName";
-            UserName.Size = new Size(61, 15);
+            UserName.Size = new Size(70, 17);
             UserName.TabIndex = 3;
             UserName.Text = "userName";
             UserName.Click += UserName_Click;
+            // 
+            // btnUser
+            // 
+            btnUser.Location = new Point(388, 234);
+            btnUser.Name = "btnUser";
+            btnUser.Size = new Size(221, 38);
+            btnUser.TabIndex = 4;
+            btnUser.Text = "Criar Usuario";
+            btnUser.UseVisualStyleBackColor = true;
             // 
             // Menu
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(963, 596);
+            Controls.Add(btnUser);
             Controls.Add(UserName);
-            Controls.Add(button3);
             Controls.Add(button2);
             Controls.Add(button1);
             Name = "Menu";
@@ -93,7 +94,7 @@
 
         private Button button1;
         private Button button2;
-        private Button button3;
         private Label UserName;
+        private Button btnUser;
     }
 }

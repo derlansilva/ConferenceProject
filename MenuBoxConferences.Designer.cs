@@ -30,6 +30,7 @@
         {
             dgvManifests = new DataGridView();
             btnIniciarConferencia = new Button();
+            btnInicarConferenciaUnidades = new Button();
             ((System.ComponentModel.ISupportInitialize)dgvManifests).BeginInit();
             SuspendLayout();
             // 
@@ -49,16 +50,28 @@
             btnIniciarConferencia.Name = "btnIniciarConferencia";
             btnIniciarConferencia.Size = new Size(233, 34);
             btnIniciarConferencia.TabIndex = 2;
-            btnIniciarConferencia.Text = "Iniciar Conferencia";
+            btnIniciarConferencia.Text = "Conferencia Caixas";
             btnIniciarConferencia.UseVisualStyleBackColor = true;
             btnIniciarConferencia.Visible = false;
             btnIniciarConferencia.Click += btnIniciarConferencia_Click_1;
+            // 
+            // btnInicarConferenciaUnidades
+            // 
+            btnInicarConferenciaUnidades.Location = new Point(183, 437);
+            btnInicarConferenciaUnidades.Name = "btnInicarConferenciaUnidades";
+            btnInicarConferenciaUnidades.Size = new Size(233, 34);
+            btnInicarConferenciaUnidades.TabIndex = 3;
+            btnInicarConferenciaUnidades.Text = "Conferencia Unidades";
+            btnInicarConferenciaUnidades.UseVisualStyleBackColor = true;
+            btnInicarConferenciaUnidades.Visible = false;
+            btnInicarConferenciaUnidades.Click += btnInicarConferenciaUnidades_Click;
             // 
             // MenuBoxConferences
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(963, 596);
+            Controls.Add(btnInicarConferenciaUnidades);
             Controls.Add(btnIniciarConferencia);
             Controls.Add(dgvManifests);
             Name = "MenuBoxConferences";
@@ -72,5 +85,6 @@
 
         private DataGridView dgvManifests;
         private Button btnIniciarConferencia;
+        private Button btnInicarConferenciaUnidades;
     }
 }
